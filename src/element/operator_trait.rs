@@ -15,7 +15,7 @@ use crate::element::element_traits::Element;
 ///
 /// # Traits
 ///
-/// * Fn(geometry: &[CoordType], data: &Hashmap<String, &[DataType]>): makes the operator callable
+/// * Fn(geometry , data): makes the operator callable
 /// by passing the real geometry of a cell and the data associated to the cell in a HashMap. Should
 /// return a flattened matrix.
 ///
