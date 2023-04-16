@@ -1,3 +1,5 @@
+use crate::geometry::geometry_traits::Geometry;
+
 use ndarray::Array;
 use ndarray::ArrayView;
 use ndarray::LinalgScalar;
@@ -54,8 +56,13 @@ pub trait ShapeBasis<CoordType, DataType: LinalgScalar> {
     /// Get the underlying dimension of the space the shapes are defined on
     fn get_dimension(&self) -> usize;
 
+    /// Get the number of DataType values to describe one shape function evalutation
+    fn get_shape_cardinality(&self) -> usize {
+        1
+    }
+
     /// Get the number of DataType values to describe one shape function derivative value
-    fn get_derivative_order(&self) -> usize {
+    fn get_derivative_cardinality(&self) -> usize {
         self.get_dimension()
     }
 
@@ -70,16 +77,23 @@ pub trait ShapeBasis<CoordType, DataType: LinalgScalar> {
 
     /// Interpolate the value of the function defined weighting each of basis function using
     /// the values argument at the point in the element defined by coord
-    fn interpolate(&self, coord: &[CoordType], values: &[DataType]) -> DataType {
-        let shapes = Array::from_vec(self.interpolate_basis(coord));
+    fn interpolate(&self, coord: &[CoordType], values: &[DataType]) -> Vec<DataType> {
+        let shapes = Array::from_shape_vec(
+            (self.get_number_of_bases(), self.get_shape_cardinality()),
+            self.interpolate_basis(coord),
+        )
+        .unwrap();
         let val_view = ArrayView::from(values);
-        shapes.dot(&val_view)
+        shapes.dot(&val_view).to_vec()
     }
 
     ///Same as interpolate above but for the derivative of the function
     fn interpolate_derivative(&self, coord: &[CoordType], values: &[DataType]) -> Vec<DataType> {
         let shape_derives = Array::from_shape_vec(
-            (self.get_number_of_bases(), self.get_derivative_order()),
+            (
+                self.get_number_of_bases(),
+                self.get_derivative_cardinality(),
+            ),
             self.interpolate_basis_derivative(coord),
         )
         .unwrap();
@@ -107,14 +121,18 @@ pub trait ShapeBasis<CoordType, DataType: LinalgScalar> {
 /// rule. An object implementing this trait should provide access to an interpolator and integrator
 /// as well as some precomputed values of the shape functions on the integration points.
 pub trait Element<CoordType: LinalgScalar, DataType: LinalgScalar> {
+    type GeometryT: Geometry<CoordType>;
     type IntegratorT: IntegrationRule<CoordType, DataType>;
     type ShapeBasisT: ShapeBasis<CoordType, DataType>;
 
+    /// Get the geometry of the element
+    fn get_geometry(&self) -> &Self::GeometryT;
+
     /// Get the integration rule
-    fn get_integrator(&self) -> Self::IntegratorT;
+    fn get_integrator(&self) -> &Self::IntegratorT;
 
     /// Get the shape basis
-    fn get_shape_basis(&self) -> Self::ShapeBasisT;
+    fn get_shape_basis(&self) -> &Self::ShapeBasisT;
 
     /// Get the values of the shape basis at the integration points in AOS ordering and shape
     /// `(number_integration_points, number_shape_basis_functions, shape_order)`

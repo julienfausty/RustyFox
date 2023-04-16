@@ -1,3 +1,6 @@
+/// Module for jacobi polynomials
+pub mod jacobi;
+
 /// Module for all traits at element level
 pub mod element_traits;
 
