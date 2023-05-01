@@ -22,8 +22,8 @@ use crate::element::element_traits::Element;
 /// # Explanation
 /// Given the geometry of a cell and its associated data, compute a local matrix that embodies the
 /// discretized operator
-pub trait Operator<CoordType: LinalgScalar, DataType: LinalgScalar>:
+pub trait Operator<CoordType: LinalgScalar, IndexType, DataType: LinalgScalar>:
     Fn(&[CoordType], &HashMap<String, &[DataType]>) -> Vec<DataType>
 {
-    type ElementT: Element<CoordType, DataType>;
+    type ElementT: Element<CoordType, IndexType, DataType>;
 }

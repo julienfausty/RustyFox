@@ -120,8 +120,8 @@ pub trait ShapeBasis<CoordType, DataType: LinalgScalar> {
 /// integration rule. The geometry of the element is implicit in the shape basis and integration
 /// rule. An object implementing this trait should provide access to an interpolator and integrator
 /// as well as some precomputed values of the shape functions on the integration points.
-pub trait Element<CoordType: LinalgScalar, DataType: LinalgScalar> {
-    type GeometryT: Geometry<CoordType>;
+pub trait Element<CoordType: LinalgScalar, IndexType, DataType: LinalgScalar> {
+    type GeometryT: Geometry<CoordType, IndexType>;
     type IntegratorT: IntegrationRule<CoordType, DataType>;
     type ShapeBasisT: ShapeBasis<CoordType, DataType>;
 
